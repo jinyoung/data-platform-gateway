@@ -1,0 +1,125 @@
+server:
+  port: 9000
+
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      # Global CORS Configuration
+      globalcors:
+        cors-configurations:
+          '[/**]':
+            allowedOrigins:
+              - "http://localhost:3000"      # robo-analyzer-vue3
+              - "http://localhost:3001"
+              - "http://localhost:3002"
+              - "http://localhost:5173"      # robo-architect frontend
+              - "http://localhost:5174"
+              - "http://localhost:5175"      # data-platform-olap frontend
+              - "http://127.0.0.1:3000"
+              - "http://127.0.0.1:3001"
+              - "http://127.0.0.1:3002"
+              - "http://127.0.0.1:5173"
+              - "http://127.0.0.1:5174"
+              - "http://127.0.0.1:5175"
+            allowedMethods:
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - PATCH
+              - OPTIONS
+            allowedHeaders: "*"
+            exposedHeaders:
+              - Content-Disposition
+              - Content-Type
+            allowCredentials: true
+            maxAge: 3600
+      
+      # Route Configuration
+      routes:
+        # ============================================
+        # ANTLR Parser Service (Spring Boot) - Port 8081
+        # ============================================
+        - id: antlr-service
+          uri: http://127.0.0.1:8081
+          predicates:
+            - Path=/antlr/**
+          filters:
+            # Origin 헤더 제거하여 ANTLR 서버의 CORS 검사 우회
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # ROBO Analyzer Service (FastAPI) - Port 5502
+        # ============================================
+        - id: robo-analyzer-service
+          uri: http://127.0.0.1:5502
+          predicates:
+            - Path=/robo/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Text2SQL Service (FastAPI) - Port 8000
+        # 백엔드가 /text2sql/** 경로를 그대로 사용함
+        # ============================================
+        - id: text2sql-service
+          uri: http://127.0.0.1:8000
+          predicates:
+            - Path=/text2sql/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Data Platform OLAP Service (FastAPI) - Port 8002
+        # ============================================
+        - id: olap-service
+          uri: http://127.0.0.1:8002
+          predicates:
+            - Path=/olap/**
+          filters:
+            - RewritePath=/olap/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # ROBO Architect Service (FastAPI) - Port 8001
+        # ============================================
+        - id: architect-service
+          uri: http://127.0.0.1:8001
+          predicates:
+            - Path=/architect/**
+          filters:
+            - RewritePath=/architect/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # LangChain Text2SQL Service (FastAPI) - Port 8001
+        # ============================================
+        - id: langchain-service
+          uri: http://127.0.0.1:8001
+          predicates:
+            - Path=/langchain/**
+          filters:
+            - RewritePath=/langchain/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+
+# Actuator endpoints for health check
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+    gateway:
+      enabled: true
+
+# Logging
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    reactor.netty: INFO
+
