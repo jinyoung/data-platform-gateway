@@ -12,7 +12,9 @@ spring:
         cors-configurations:
           '[/**]':
             allowedOrigins:
-              - "http://localhost:3000"      # robo-analyzer-vue3
+              - "http://localhost:9000"      # 게이트웨이 통합 접속
+              - "http://127.0.0.1:9000"
+              - "http://localhost:3000"      # robo-analyzer-vue3 개발서버
               - "http://localhost:3001"
               - "http://localhost:3002"
               - "http://localhost:5173"      # robo-architect frontend
@@ -41,19 +43,78 @@ spring:
       # Route Configuration
       routes:
         # ============================================
-        # ANTLR Parser Service (Spring Boot) - Port 8081
+        # API Gateway Prefix Routes (/api/gateway/**)
+        # 프론트엔드에서 /api/gateway/antlr/** 형태로 요청 시 처리
         # ============================================
+        - id: api-gateway-antlr
+          uri: http://127.0.0.1:8081
+          predicates:
+            - Path=/api/gateway/antlr/**
+          filters:
+            - RewritePath=/api/gateway/antlr/(?<segment>.*), /antlr/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-robo
+          uri: http://127.0.0.1:5502
+          predicates:
+            - Path=/api/gateway/robo/**
+          filters:
+            - RewritePath=/api/gateway/robo/(?<segment>.*), /robo/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-text2sql
+          uri: http://127.0.0.1:8000
+          predicates:
+            - Path=/api/gateway/text2sql/**
+          filters:
+            - RewritePath=/api/gateway/text2sql/(?<segment>.*), /text2sql/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-olap
+          uri: http://127.0.0.1:8002
+          predicates:
+            - Path=/api/gateway/olap/**
+          filters:
+            - RewritePath=/api/gateway/olap/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-architect
+          uri: http://127.0.0.1:8001
+          predicates:
+            - Path=/api/gateway/architect/**
+          filters:
+            - RewritePath=/api/gateway/architect/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-langchain
+          uri: http://127.0.0.1:8001
+          predicates:
+            - Path=/api/gateway/langchain/**
+          filters:
+            - RewritePath=/api/gateway/langchain/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-agent-scheduler
+          uri: http://127.0.0.1:8089
+          predicates:
+            - Path=/api/gateway/agent-scheduler/**
+          filters:
+            - RewritePath=/api/gateway/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Direct API Routes (기존 경로 유지)
+        # ============================================
+        
+        # ANTLR Parser Service (Spring Boot) - Port 8081
         - id: antlr-service
           uri: http://127.0.0.1:8081
           predicates:
             - Path=/antlr/**
           filters:
-            # Origin 헤더 제거하여 ANTLR 서버의 CORS 검사 우회
             - RemoveRequestHeader=Origin
         
-        # ============================================
         # ROBO Analyzer Service (FastAPI) - Port 5502
-        # ============================================
         - id: robo-analyzer-service
           uri: http://127.0.0.1:5502
           predicates:
@@ -61,10 +122,7 @@ spring:
           filters:
             - RemoveRequestHeader=Origin
         
-        # ============================================
         # Text2SQL Service (FastAPI) - Port 8000
-        # 백엔드가 /text2sql/** 경로를 그대로 사용함
-        # ============================================
         - id: text2sql-service
           uri: http://127.0.0.1:8000
           predicates:
@@ -103,6 +161,29 @@ spring:
             - Path=/langchain/**
           filters:
             - RewritePath=/langchain/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Agent Scheduler Service (FastAPI) - Port 8089
+        # ============================================
+        - id: agent-scheduler-service
+          uri: http://127.0.0.1:8089
+          predicates:
+            - Path=/agent-scheduler/**
+          filters:
+            - RewritePath=/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Frontend (Vue3) - Port 3000
+        # 모든 나머지 요청은 프론트엔드로 라우팅 (맨 마지막에 위치해야 함)
+        # Vite 개발 서버가 IPv6(::1)로 바인딩되므로 localhost 사용
+        # ============================================
+        - id: frontend
+          uri: http://localhost:3000
+          predicates:
+            - Path=/**
+          filters:
             - RemoveRequestHeader=Origin
 
 # Actuator endpoints for health check
