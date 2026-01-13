@@ -63,11 +63,11 @@ spring:
             - RemoveRequestHeader=Origin
         
         - id: api-gateway-text2sql
-          uri: http://127.0.0.1:8000
+          uri: http://127.0.0.1:8001
           predicates:
             - Path=/api/gateway/text2sql/**
           filters:
-            - RewritePath=/api/gateway/text2sql/(?<segment>.*), /text2sql/$\{segment}
+            - RewritePath=/api/gateway(?<segment>.*), $\{segment}
             - RemoveRequestHeader=Origin
         
         - id: api-gateway-olap
@@ -122,9 +122,9 @@ spring:
           filters:
             - RemoveRequestHeader=Origin
         
-        # Text2SQL Service (FastAPI) - Port 8000
+        # Text2SQL Service (FastAPI) - Port 8001
         - id: text2sql-service
-          uri: http://127.0.0.1:8000
+          uri: http://127.0.0.1:8001
           predicates:
             - Path=/text2sql/**
           filters:

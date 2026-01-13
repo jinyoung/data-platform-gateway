@@ -1,0 +1,67 @@
+# Docker 환경용 설정
+# 컨테이너 이름으로 서비스 연결
+
+spring:
+  cloud:
+    gateway:
+      routes:
+        # ============================================
+        # API Gateway Prefix Routes (/api/gateway/**)
+        # ============================================
+        - id: api-gateway-antlr
+          uri: http://robo-antlr-parser:8081
+          predicates:
+            - Path=/api/gateway/antlr/**
+          filters:
+            - RewritePath=/api/gateway/antlr/(?<segment>.*), /antlr/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-robo
+          uri: http://robo-analyzer:5502
+          predicates:
+            - Path=/api/gateway/robo/**
+          filters:
+            - RewritePath=/api/gateway/robo/(?<segment>.*), /robo/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-text2sql
+          uri: http://robo-text2sql:8000
+          predicates:
+            - Path=/api/gateway/text2sql/**
+          filters:
+            - RewritePath=/api/gateway/text2sql/(?<segment>.*), /text2sql/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Direct API Routes
+        # ============================================
+        - id: antlr-service
+          uri: http://robo-antlr-parser:8081
+          predicates:
+            - Path=/antlr/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        - id: robo-analyzer-service
+          uri: http://robo-analyzer:5502
+          predicates:
+            - Path=/robo/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        - id: text2sql-service
+          uri: http://robo-text2sql:8000
+          predicates:
+            - Path=/text2sql/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Frontend (Nginx)
+        # ============================================
+        - id: frontend
+          uri: http://robo-frontend:80
+          predicates:
+            - Path=/**
+          filters:
+            - RemoveRequestHeader=Origin
