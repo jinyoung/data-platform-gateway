@@ -57,6 +57,60 @@ spring:
             - RemoveRequestHeader=Origin
         
         # ============================================
+        # Data Fabric (데이터소스 관리)
+        # ============================================
+        - id: api-gateway-data-fabric
+          uri: http://robo-data-fabric:8004
+          predicates:
+            - Path=/api/gateway/data-fabric/**
+          filters:
+            - RewritePath=/api/gateway/data-fabric(?<segment>.*), $\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: datasources-service
+          uri: http://robo-data-fabric:8004
+          predicates:
+            - Path=/api/datasources/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Domain Layer (Ontology)
+        # ============================================
+        - id: api-gateway-ontology
+          uri: http://robo-domain-layer:8002
+          predicates:
+            - Path=/api/gateway/ontology/**
+          filters:
+            - RewritePath=/api/gateway/ontology/(?<segment>.*), /ontology/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: ontology-service
+          uri: http://robo-domain-layer:8002
+          predicates:
+            - Path=/ontology/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Data Secure Guard API (RBAC 보안 관리)
+        # ============================================
+        - id: api-gateway-security
+          uri: http://robo-security-api:8006
+          predicates:
+            - Path=/api/gateway/security/**
+          filters:
+            - RewritePath=/api/gateway/security/(?<segment>.*), /api/security/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: security-api-direct
+          uri: http://robo-security-api:8006
+          predicates:
+            - Path=/api/security/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
         # Frontend (Nginx)
         # ============================================
         - id: frontend

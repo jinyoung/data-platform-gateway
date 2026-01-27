@@ -63,7 +63,7 @@ spring:
             - RemoveRequestHeader=Origin
         
         - id: api-gateway-text2sql
-          uri: http://127.0.0.1:8001
+          uri: http://127.0.0.1:8000
           predicates:
             - Path=/api/gateway/text2sql/**
           filters:
@@ -102,6 +102,58 @@ spring:
             - RewritePath=/api/gateway/agent-scheduler/(?<segment>.*), /$\{segment}
             - RemoveRequestHeader=Origin
         
+        - id: api-gateway-ontology
+          uri: http://127.0.0.1:8003
+          predicates:
+            - Path=/api/gateway/ontology/**
+          filters:
+            - RewritePath=/api/gateway/ontology/(?<segment>.*), /ontology/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # Direct /api/ontology route (for frontend)
+        - id: ontology-api-direct
+          uri: http://127.0.0.1:8003
+          predicates:
+            - Path=/api/ontology/**
+          filters:
+            - RewritePath=/api/ontology/(?<segment>.*), /ontology/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-data-fabric
+          uri: http://127.0.0.1:8004
+          predicates:
+            - Path=/api/gateway/data-fabric/**
+          filters:
+            - RewritePath=/api/gateway/data-fabric/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: api-gateway-whatif
+          uri: http://127.0.0.1:8005
+          predicates:
+            - Path=/api/gateway/whatif/**
+          filters:
+            - RewritePath=/api/gateway/whatif/(?<segment>.*), /api/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Data Secure Guard Service (FastAPI) - Port 8006
+        # RBAC based security management API
+        # ============================================
+        - id: api-gateway-security
+          uri: http://127.0.0.1:8006
+          predicates:
+            - Path=/api/gateway/security/**
+          filters:
+            - RewritePath=/api/gateway/security/(?<segment>.*), /api/security/$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: security-api-direct
+          uri: http://127.0.0.1:8006
+          predicates:
+            - Path=/api/security/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
         # ============================================
         # Direct API Routes (기존 경로 유지)
         # ============================================
@@ -122,9 +174,9 @@ spring:
           filters:
             - RemoveRequestHeader=Origin
         
-        # Text2SQL Service (FastAPI) - Port 8001
+        # Text2SQL Service (FastAPI) - Port 8000
         - id: text2sql-service
-          uri: http://127.0.0.1:8001
+          uri: http://127.0.0.1:8000
           predicates:
             - Path=/text2sql/**
           filters:
@@ -172,6 +224,61 @@ spring:
             - Path=/agent-scheduler/**
           filters:
             - RewritePath=/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Domain Layer Service (FastAPI) - Port 8002
+        # Ontology schema generation and management
+        # ============================================
+        - id: ontology-service
+          uri: http://127.0.0.1:8002
+          predicates:
+            - Path=/ontology/**
+          filters:
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Risk Calculator Service (FastAPI) - Port 8003
+        # ObjectType Behavior execution service
+        # ============================================
+        - id: api-gateway-risk-calculator
+          uri: http://127.0.0.1:8003
+          predicates:
+            - Path=/api/gateway/risk-calculator/**
+          filters:
+            - RewritePath=/api/gateway/risk-calculator/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: risk-calculator-service
+          uri: http://127.0.0.1:8003
+          predicates:
+            - Path=/risk-calculator/**
+          filters:
+            - RewritePath=/risk-calculator/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Data Fabric Service (FastAPI) - Port 8004
+        # DataSource management and MindsDB integration
+        # ============================================
+        - id: data-fabric-service
+          uri: http://127.0.0.1:8004
+          predicates:
+            - Path=/data-fabric/**
+          filters:
+            - RewritePath=/data-fabric/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # What-If Simulator Service (FastAPI) - Port 8005
+        # Causal Discovery and What-If Simulation
+        # ============================================
+        - id: whatif-service
+          uri: http://127.0.0.1:8005
+          predicates:
+            - Path=/whatif/**
+          filters:
+            - RewritePath=/whatif/(?<segment>.*), /api/$\{segment}
             - RemoveRequestHeader=Origin
         
         # ============================================
