@@ -19,21 +19,10 @@ spring:
       globalcors:
         cors-configurations:
           '[/**]':
-            allowedOrigins:
-              - "http://localhost:9000"      # 게이트웨이 통합 접속
-              - "http://127.0.0.1:9000"
-              - "http://localhost:3000"      # robo-analyzer-vue3 개발서버
-              - "http://localhost:3001"
-              - "http://localhost:3002"
-              - "http://localhost:5173"      # robo-architect frontend
-              - "http://localhost:5174"
-              - "http://localhost:5175"      # data-platform-olap frontend
-              - "http://127.0.0.1:3000"
-              - "http://127.0.0.1:3001"
-              - "http://127.0.0.1:3002"
-              - "http://127.0.0.1:5173"
-              - "http://127.0.0.1:5174"
-              - "http://127.0.0.1:5175"
+            allowedOriginPatterns:
+              - "http://localhost:[*]"
+              - "http://127.0.0.1:[*]"
+              - "https://*.ngrok-free.app"   # ngrok 터널링
             allowedMethods:
               - GET
               - POST
@@ -116,6 +105,18 @@ spring:
             - Path=/api/gateway/ontology/**
           filters:
             - RewritePath=/api/gateway/ontology/(?<segment>.*), /ontology/$\{segment}
+            - RemoveRequestHeader=Origin
+          metadata:
+            connect-timeout: 5000
+            response-timeout: 600000
+        
+        # Domain Layer What-if Simulation API
+        - id: api-gateway-domain-whatif
+          uri: http://127.0.0.1:8002
+          predicates:
+            - Path=/api/gateway/domain-whatif/**
+          filters:
+            - RewritePath=/api/gateway/domain-whatif/(?<segment>.*), /whatif/$\{segment}
             - RemoveRequestHeader=Origin
           metadata:
             connect-timeout: 5000

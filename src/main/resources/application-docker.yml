@@ -93,6 +93,25 @@ spring:
             - RemoveRequestHeader=Origin
         
         # ============================================
+        # Agent Scheduler (감시 에이전트)
+        # ============================================
+        - id: api-gateway-agent-scheduler
+          uri: http://robo-agent-scheduler:8089
+          predicates:
+            - Path=/api/gateway/agent-scheduler/**
+          filters:
+            - RewritePath=/api/gateway/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        - id: agent-scheduler-service
+          uri: http://robo-agent-scheduler:8089
+          predicates:
+            - Path=/agent-scheduler/**
+          filters:
+            - RewritePath=/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
         # Data Secure Guard API (RBAC 보안 관리)
         # ============================================
         - id: api-gateway-security
