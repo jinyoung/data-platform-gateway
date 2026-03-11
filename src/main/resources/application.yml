@@ -99,6 +99,15 @@ spring:
             - RewritePath=/api/gateway/agent-scheduler/(?<segment>.*), /$\{segment}
             - RemoveRequestHeader=Origin
         
+        # Node-Local Agent Scheduler (port 8091)
+        - id: api-gateway-node-agent-scheduler
+          uri: http://127.0.0.1:8091
+          predicates:
+            - Path=/api/gateway/node-agent-scheduler/**
+          filters:
+            - RewritePath=/api/gateway/node-agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
         - id: api-gateway-ontology
           uri: http://127.0.0.1:8002
           predicates:
@@ -239,6 +248,17 @@ spring:
             - Path=/agent-scheduler/**
           filters:
             - RewritePath=/agent-scheduler/(?<segment>.*), /$\{segment}
+            - RemoveRequestHeader=Origin
+        
+        # ============================================
+        # Node-Local Agent Scheduler Service (FastAPI) - Port 8091
+        # ============================================
+        - id: node-agent-scheduler-service
+          uri: http://127.0.0.1:8091
+          predicates:
+            - Path=/node-agent-scheduler/**
+          filters:
+            - RewritePath=/node-agent-scheduler/(?<segment>.*), /$\{segment}
             - RemoveRequestHeader=Origin
         
         # ============================================
